@@ -72,6 +72,14 @@ class Account(models.Model):
     def __str__(self) -> str:
         return f"Account: {self.name}"
 
+class CreditCardAccount(Account):
+    def __str__(self) -> str:
+        return f"Credit Card: {self.name}"
+    
+class CheckingAccount(Account):
+    def __str__(self) -> str:
+        return f"Checking Account: {self.name}"
+
 class Transaction(models.Model):
     transaction_date = models.DateField(blank=True)
     posted_date = models.DateField(blank=True)
@@ -81,4 +89,6 @@ class Transaction(models.Model):
     category_certainty = models.FloatField(blank=True, null=True)
     debit_amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, default=0.00)
     credit_amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, default=0.00)
-    
+
+    # If the balance is not given for a transaction, null
+    balance = models.DecimalField(max_digits=15, decimal_places=2, blank=True,null=True, default=None)

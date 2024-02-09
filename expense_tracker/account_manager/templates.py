@@ -12,6 +12,7 @@ class TransactionTemplate:
     category: str
     debit_amount: Decimal
     credit_amount: Decimal
+    balance: Decimal|None
 
     @classmethod
     def export_to_csv(cls, transactions: 'list[TransactionTemplate]', filename = "skipped_transactions.csv"):
@@ -30,6 +31,10 @@ class TransactionTemplate:
             for tr in transactions:
                 _ = []
                 for col in columns:
-                    _.append(getattr(tr,col))
+                    val = getattr(tr,col)
+                    if val is None and col == "balance":
+                        val = "Balance not provided"
+
+                    _.append(val)
 
                 writer.writerow(_)

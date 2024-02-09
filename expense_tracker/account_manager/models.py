@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 import pandas as pd
 from .templates import TransactionTemplate
 from typing import TYPE_CHECKING
@@ -9,7 +11,13 @@ if TYPE_CHECKING:
 
 # Create your models here.
 class Account(models.Model):
+    TYPES = (
+        (1,"Checking Account"),
+        (2,"Credit Card Account")
+    )
+
     name = models.CharField(max_length=50)
+    type = models.IntegerField(choices=TYPES,default=1)
 
     def _is_duplicate_transaction(self, transaction: TransactionTemplate) -> bool:
         duplicate_suspicion = 0
@@ -72,14 +80,6 @@ class Account(models.Model):
     def __str__(self) -> str:
         return f"Account: {self.name}"
 
-class CreditCardAccount(Account):
-    def __str__(self) -> str:
-        return f"Credit Card: {self.name}"
-    
-class CheckingAccount(Account):
-    def __str__(self) -> str:
-        return f"Checking Account: {self.name}"
-
 class Transaction(models.Model):
     transaction_date = models.DateField(blank=True)
     posted_date = models.DateField(blank=True)
@@ -92,3 +92,12 @@ class Transaction(models.Model):
 
     # If the balance is not given for a transaction, null
     balance = models.DecimalField(max_digits=15, decimal_places=2, blank=True,null=True, default=None)
+
+    def readable_amount(self):
+        if abs(self.debit_amount) > 0:
+            return abs(self.debit_amount)*-1
+        if abs(self.credit_amount) > 0:
+            return abs(self.credit_amount)
+    readable_amount.short_description="Amount"
+
+

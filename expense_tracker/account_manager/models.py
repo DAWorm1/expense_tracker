@@ -20,17 +20,20 @@ class Account(models.Model):
         )
 
         for potential_duplicate in same_posted_day_transactions:
+            duplicate_suspicion = 0
+            
             # Check amount
             if transaction.credit_amount > 0 and potential_duplicate.credit_amount > 0:
-                if transaction.credit_amount - potential_duplicate.credit_amount < .05: duplicate_suspicion += 2
+                if abs(transaction.credit_amount - potential_duplicate.credit_amount) < .05: duplicate_suspicion += 2
             if transaction.debit_amount > 0 and potential_duplicate.debit_amount > 0:
-                if transaction.debit_amount - potential_duplicate.debit_amount < .05: duplicate_suspicion += 2
+                if abs(transaction.debit_amount - potential_duplicate.debit_amount) < .05: duplicate_suspicion += 2
 
             # Check description
             if transaction.description == potential_duplicate.description: duplicate_suspicion += 3
 
             # Check category
             if transaction.category == potential_duplicate.category: duplicate_suspicion += 1
+            if duplicate_suspicion > 4: break
 
         if duplicate_suspicion > 4:
             return True
@@ -40,12 +43,12 @@ class Account(models.Model):
 
     def import_transactions_from_template(self, transactions: list[TransactionTemplate]) -> tuple[bool, list[str]]:
         transactions_imported = 0
-        transactions_skipped = 0
+        transactions_skipped = []
         
         # Make sure we haven't already processed the transaction
         for tr in transactions:
             if (self._is_duplicate_transaction(tr)):
-                transactions_skipped += 1
+                transactions_skipped.append(tr)
                 continue
 
             Transaction.objects.create(
@@ -60,9 +63,11 @@ class Account(models.Model):
             )
             transactions_imported += 1
 
+        TransactionTemplate.export_to_csv(transactions_skipped)
+
         if transactions_imported == 0: return (False,[f"No transactions were imported. {transactions_skipped} transactions were skipped"])
 
-        return (True,[f"{transactions_skipped} transaction(s) were skipped.\n{transactions_imported} transaction(s) were imported to {self}."])
+        return (True,[f"{len(transactions_skipped)} transaction(s) were skipped.\n{transactions_imported} transaction(s) were imported to {self}."])
     
     def __str__(self) -> str:
         return f"Account: {self.name}"

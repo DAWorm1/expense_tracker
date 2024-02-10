@@ -1,0 +1,24 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Home Page</title>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/auth_style.css' %}">
+</head>
+
+<body>
+    <div class="container">
+        <h3>Home Page</h3>
+        {% if user.is_authenticated %} You are logged in as {{user}} 
+        {% else %} <a href="{% url 'auth_manager:auth-login' %}"><button>Login</button></a>{% endif %}
+
+        {% if user.is_authenticated %}<a href="{% url 'auth_manager:auth-logout' %}"><button>Logout</button></a>{% endif %}
+    </div>
+</body>
+
+</html>

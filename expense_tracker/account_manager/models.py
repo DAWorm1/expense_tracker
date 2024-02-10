@@ -31,10 +31,17 @@ class Account(models.Model):
             duplicate_suspicion = 0
             
             # Check amount
-            if transaction.credit_amount > 0 and potential_duplicate.credit_amount > 0:
-                if abs(transaction.credit_amount - potential_duplicate.credit_amount) < .05: duplicate_suspicion += 2
-            if transaction.debit_amount > 0 and potential_duplicate.debit_amount > 0:
-                if abs(transaction.debit_amount - potential_duplicate.debit_amount) < .05: duplicate_suspicion += 2
+            abs_transaction_credit_amount = abs(transaction.credit_amount)
+            abs_transaction_debit_amount = abs(transaction.debit_amount)
+            potential_duplicate_amount = potential_duplicate.readable_amount()
+            
+            # It's a Credit
+            if potential_duplicate_amount > 0:
+                if abs(abs_transaction_credit_amount - potential_duplicate_amount) < .05: duplicate_suspicion += 2
+
+            # It's a Debit. Multiply by -1 so we ensure both sides of the subtraction are positive
+            else:
+                if abs(abs_transaction_debit_amount - potential_duplicate_amount*-1) < .05: duplicate_suspicion += 2
 
             # Check description
             if transaction.description == potential_duplicate.description: duplicate_suspicion += 3
@@ -73,7 +80,7 @@ class Account(models.Model):
 
         TransactionTemplate.export_to_csv(transactions_skipped)
 
-        if transactions_imported == 0: return (False,[f"No transactions were imported. {transactions_skipped} transactions were skipped"])
+        if transactions_imported == 0: return (False,[f"No transactions were imported. {len(transactions_skipped)} transactions were skipped"])
 
         return (True,[f"{len(transactions_skipped)} transaction(s) were skipped.\n{transactions_imported} transaction(s) were imported to {self}."])
     

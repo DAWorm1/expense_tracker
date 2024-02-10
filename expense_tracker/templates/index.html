@@ -1,4 +1,6 @@
 {% load static %}
+{% load template_filters %}
+{% load humanize %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -8,16 +10,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Home Page</title>
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/grid.css' %}">
   <link rel="stylesheet" href="{% static 'css/auth_style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/index.css' %}">
 </head>
 
 <body>
     <div class="container">
         <h3>Home Page</h3>
-        {% if user.is_authenticated %} You are logged in as {{user}} 
+        {% if user.is_authenticated %}
+        <div class="dashboard-container">
+          <div class="span-6">
+            <p>Total Income: ${{total_income|floatformat:2|intcomma}}</p>
+            <p>Total Expense: ${{total_expenses|floatformat:2|intcomma}}</p>
+          </div>
+          <div class="span-6">
+            <h3>Filters</h3>
+            {% if available_periods %}
+            <ul class="no-list">
+              {% for period in available_periods %}
+              <li><a href="?dashboard_filter_period={{period.name}}"><button id="{{period.name}}" class="filter-selector {%if period.name == request.GET.dashboard_filter_period%}selected{%endif%}">{{period.name|humanize_underscore_string}}</button></a></li>
+              {% endfor %}
+            </ul>
+            {% endif %}
+            
+          </div>
+        </div>
+        You are logged in as {{user}} 
+        
+        <a href="{% url 'auth_manager:auth-logout' %}"><button>Logout</button></a>
+
         {% else %} <a href="{% url 'auth_manager:auth-login' %}"><button>Login</button></a>{% endif %}
 
-        {% if user.is_authenticated %}<a href="{% url 'auth_manager:auth-logout' %}"><button>Logout</button></a>{% endif %}
+        
     </div>
 </body>
 

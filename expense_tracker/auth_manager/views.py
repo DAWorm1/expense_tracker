@@ -24,6 +24,8 @@ def login_page(request: 'HttpRequest'):
         user = authenticate(username=username_provided,password=password_provided)
         if user is not None:
             login(request,user)
+            if request.GET.get("redirect"):
+                return HttpResponseRedirect(request.GET.get("redirect"))
             return HttpResponseRedirect(reverse("index"))
         else:
             raise NotImplementedError("PENDING")

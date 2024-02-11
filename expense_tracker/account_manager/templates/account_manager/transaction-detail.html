@@ -1,0 +1,32 @@
+{% include 'base.html' %}
+
+{% if request.user.is_authenticated %}
+{% load static %}
+{% load template_filters %}
+
+{%  block header %}
+<link rel="stylesheet" href="{% static 'css/transaction-detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="content-container">
+        <h4>{{transaction_metadata.transaction_date}}: $ {{readable_amount}}</h4>
+        <div class="transaction-metadata-container">
+            {% for key,value in transaction_metadata.items %}
+            <div class="transaction-metadata-item {%if 'date' in key%}date{%endif%}">
+                <strong>{{key|humanize_underscore_string}}</strong>: {{value}}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% else %}
+
+<h2>You are not logged in.</h2>
+<p>
+    Please login to access this page: <a href="{% url 'auth_manager:auth-login' %}?redirect={% url 'account_manager:transaction-detail' id%}"><button>Login</button></a>
+</p>
+
+{% endif %}

@@ -17,10 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from .views import index as HomePage
-import auth_manager.urls as AuthUrls
 
 urlpatterns = [
     path('', HomePage,name="index"),
+    path('transaction/',include("account_manager.urls")),
     path('auth/', include("auth_manager.urls")),
     path('admin/', admin.site.urls),
 ]

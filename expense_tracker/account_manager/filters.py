@@ -20,7 +20,30 @@ class Period(IntEnum):
     @classmethod
     def is_period(cls, period):
         return (period in cls.__members__)
+    
+    @classmethod
+    def get_start_end_date_of_period(cls, period,today: date = date.today()) -> tuple[date,date]:
+        match period:
+            case cls.THIS_MONTH:
+                start_value = date(today.year,today.month,1)
+                end_value = date(today.year,today.month,calendar.monthrange(today.year,today.month)[1]) 
+            case cls.LAST_MONTH:
+                last_month = (today.replace(day=1) - timedelta(days=1))
+                start_value = last_month.replace(day=1)
+                end_value = date(last_month.year,last_month.month,calendar.monthrange(last_month.year,last_month.month)[1])
+            case cls.THIS_QUARTER:
+                start_value = _get_dates_quarter_first_day(today)
+                end_value = start_value + relativedelta(months=+3)
+            case cls.THIS_YEAR:
+                start_value = date(today.year,1,1)
+                end_value = date(today.year,12,31)
+            case cls.YTD:
+                start_value = today - relativedelta(years=1)
+                end_value = today
+            case _:
+                raise NotImplementedError("Haven't implemented this period type yet.")
 
+        return (start_value, end_value)
 
 def _get_dates_quarter_first_day(day_to_check: date):
     quarter=math.ceil(day_to_check.month/3.)
@@ -46,25 +69,7 @@ Returns:
 def get_transactions_filter_by_period(period: Period, transaction:bool = True, today=date.today(), **kwargs) -> 'QuerySet[Transaction]':
     start_value = None
 
-    match period:
-        case Period.THIS_MONTH:
-            start_value = date(today.year,today.month,1)
-            end_value = date(today.year,today.month,calendar.monthrange(today.year,today.month)[1]) 
-        case Period.LAST_MONTH:
-            last_month = (today.replace(day=1) - timedelta(days=1))
-            start_value = last_month.replace(day=1)
-            end_value = date(last_month.year,last_month.month,calendar.monthrange(last_month.year,last_month.month)[1])
-        case Period.THIS_QUARTER:
-            start_value = _get_dates_quarter_first_day(today)
-            end_value = start_value + relativedelta(months=+3)
-        case Period.THIS_YEAR:
-            start_value = date(today.year,1,1)
-            end_value = date(today.year,12,31)
-        case Period.YTD:
-            start_value = today - relativedelta(years=1)
-            end_value = today
-        case _:
-            raise NotImplementedError("Haven't implemented this period type yet.")
+    start_value,end_value = Period.get_start_end_date_of_period(period,today)
 
     if start_value and end_value:
         period_str = "transaction_date" if transaction else "posted_date"

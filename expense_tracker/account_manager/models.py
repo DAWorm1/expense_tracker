@@ -1,9 +1,13 @@
 from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from taggit.managers import TaggableManager
 import pandas as pd
 from .templates import TransactionTemplate
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from decimal import Decimal
 
 if TYPE_CHECKING:
     from django.db.models import QuerySet
@@ -87,6 +91,24 @@ class Account(models.Model):
     def __str__(self) -> str:
         return f"Account: {self.name}"
 
+class TransactionItem(models.Model):
+    transaction = models.ForeignKey('Transaction', on_delete=models.CASCADE, related_name="items")
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    description = models.CharField(max_length=100)
+    category = models.TextField(default="", blank=True)
+    category_certainty = models.FloatField(blank=True, null=True)
+
+    tags = TaggableManager()
+
+    def readable_amount(self):
+        if self.amount < 0:
+            self.amount = abs(self.amount)
+            self.save(update_fields=["amount",])
+
+        if self.transaction.is_credit(): 
+            return self.amount
+        return self.amount*-1
+
 class Transaction(models.Model):
     transaction_date = models.DateField(blank=True)
     posted_date = models.DateField(blank=True)
@@ -97,14 +119,43 @@ class Transaction(models.Model):
     debit_amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, default=0.00)
     credit_amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, default=0.00)
 
+    note = models.TextField(blank=True,default="")
+
+    tags = TaggableManager()
+
     # If the balance is not given for a transaction, null
     balance = models.DecimalField(max_digits=15, decimal_places=2, blank=True,null=True, default=None)
+
+    def is_credit(self):
+        return True if self.credit_amount > 0 else False
 
     def readable_amount(self):
         if abs(self.debit_amount) > 0:
             return abs(self.debit_amount)*-1
         if abs(self.credit_amount) > 0:
             return abs(self.credit_amount)
+        return Decimal(0)
     readable_amount.short_description="Amount"
 
 
+
+@receiver(post_save, sender=Transaction)
+def _create_default_transaction_items(sender: 'Transaction', instance: 'Transaction', created: bool, raw: bool, using, update_fields, **kwargs):
+        if not created:
+            return
+        
+        if instance is None:
+            raise Exception("No instance was created / provided")
+
+        if instance.items.all().count() > 0:
+            return
+
+        item = TransactionItem(
+            transaction = instance,
+            amount = abs(instance.readable_amount()),
+            description = instance.description,
+            category = instance.category,
+            category_certainty = instance.category_certainty
+        )
+        item.save()
+        item.tags.add(*[tag for tag in instance.tags.all()])

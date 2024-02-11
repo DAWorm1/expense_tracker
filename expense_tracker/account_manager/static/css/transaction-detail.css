@@ -1,0 +1,13 @@
+.transaction-metadata-item.date {
+    padding: var(--sp_1);
+    margin: 0px auto var(--sp_4) auto;
+    background-color: var(--accent-color);
+    color: white;
+  }
+
+.transaction-metadata-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--sp_1);
+}

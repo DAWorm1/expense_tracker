@@ -109,3 +109,18 @@ class UtilsTestCase(TestCase):
         )
 
         self.assertAlmostEqual(correct_expenses,calc_expenses)
+
+    def test_get_total_expenses_from_transactions_none(self):
+        #Purposefully set up so no Transactions will be found. 
+        tr = Transaction.objects.filter(
+            debit_amount=Decimal(0),
+            credit_amount=Decimal(0)
+        )
+
+        self.assertEqual(0,tr.count())
+
+        correct_expenses = Decimal(0)
+        
+        calc_expenses = get_total_expenses_from_transactions(tr)
+        
+        self.assertAlmostEqual(correct_expenses,calc_expenses)

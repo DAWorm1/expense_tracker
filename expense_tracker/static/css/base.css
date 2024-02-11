@@ -9,6 +9,24 @@
   * font: font-style font-variant font-weight font-size/line-height font-family; }
 ------------------------------------------------------------------ */
 
+.green {
+  color: green;
+}
+
+.red {
+  color: red;
+}
+
+div.content-container {
+  background-color: var(--element-background);
+  box-shadow: var(--color-gray-100) 1px 1px;
+  padding: .5em 1em;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}
+
 :root {
     /* Fonts */
     --font-body: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;

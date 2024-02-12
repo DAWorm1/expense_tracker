@@ -44,7 +44,7 @@
               {% for tr in transactions %}
               <tr>
                 <td>{{tr.transaction_date}}</td>
-                <td>{{tr.description}}</td>
+                <td><a href="{% url 'account_manager:transaction-detail' tr.pk %}">{{tr.description}}</a></td>
                 <td>{{tr.account.name}}</td>
                 <td>{{tr.readable_amount}}</td>
               </tr>

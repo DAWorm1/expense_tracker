@@ -11,3 +11,34 @@
     flex-wrap: wrap;
     gap: var(--sp_1);
 }
+
+span.editable {
+  transition: ease-in-out font-size .1s, padding .25s, background-color .25s, background-image .1s, width .1s, height .1s;
+}
+
+.editable-fields {
+  display:flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+
+span.editable:hover {
+  font-size: 105%;
+  padding: .1em;
+  background: lightgray;
+}
+span.editable:hover::after {
+  background-image: url('/static/img/edit-pencil.svg');
+  background-size: 25px 25px;
+  display: inline-block;
+  width: 25px;
+  height: 25px;
+  content: "";
+  margin-left: 10px;
+  top: .15em;
+  position: relative;
+}
+
+.hidden {
+  display: none !important;
+}

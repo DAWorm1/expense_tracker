@@ -11,17 +11,116 @@
 {% block content %}
 <div class="container">
     <div class="content-container">
-        <h4>{{transaction_metadata.transaction_date}}: $ {{readable_amount}}</h4>
         <div class="transaction-metadata-container">
-            {% for key,value in transaction_metadata.items %}
-            <div class="transaction-metadata-item {%if 'date' in key%}date{%endif%}">
-                <strong>{{key|humanize_underscore_string}}</strong>: {{value}}
+            <div class="transaction-metadata-item date">
+                <strong>Transaction Date</strong>: {{transaction_metadata.transaction_date}}
             </div>
-            {% endfor %}
+            <div class="transaction-metadata-item date">
+                <strong>Posted Date</strong>: {{transaction_metadata.posted_date}}
+            </div>
+            <div class="break"></div>
+            <div>
+                <strong>Amount: </strong>${{readable_amount}}
+            </div>
+            <div class="break"></div>
+            <form action="{{transaction.pk}}/edit/" method="post" novalidate>
+                {%csrf_token%}
+                <div class="editable-fields">
+                    {{editable_transaction_fields.description}} <button class="hidden" id="transaction_description">✓</button>
+                    {{editable_transaction_fields.category}} <button class="hidden" id="transaction_category">✓</button>
+                    {{editable_transaction_fields.tags}} <button class="hidden" id="transaction_tags">✓</button>
+                    <input id="submit_transaction_info" class="hidden" type="submit">
+                </div>
+                {% for key,value in transaction_metadata.items %}
+                {% if 'date' not in key %}
+                <div class="transaction-metadata-item {%if 'date' in key%}date{%endif%}">
+                    <strong>{{key|humanize_underscore_string}}</strong>: {%if not 'account' in key%}<span name="{{key|lower}}" class="editable">{{value}}{%else%}{{value.name}}{%endif%}</span>
+                </div>
+                <div class="break"></div>            
+                {% endif %}
+                {% endfor %}
+                <br />
+            </form>
+        </div>
+        <hr>
+        <h3>Itemization</h3>
+        <div>
+            <table>
+                <tr>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Category</th>
+                    {% if item.tags.all.count > 0 %}<th>Tags</th>{% endif %}
+                </tr>
+                {% for item in transaction.items.all %}
+                <tr>
+                    <td>{{item.description}}</td>
+                    <td>{{item.amount}}</td>
+                    <td>{{item.category}}</td>
+                    {% if item.tags.all.count > 0 %}
+                    <td>
+                        <ul>
+                            {% for tag in item.tags.all %}<li>{{tag}}</li>{% endfor %}
+                        </ul>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </table>            
         </div>
     </div>
 </div>
 {% endblock %}
+
+{% block script %}
+<script>
+    var span = document.querySelectorAll("span.editable")
+    var buttons = document.querySelectorAll(".editable-fields button")
+
+    function clickToEdit(event) {
+        this.classList.toggle("hidden");
+        
+        var button = document.querySelector("#transaction_"+this.getAttribute("name"))
+        var hiddenInput = document.querySelector("#id_"+this.getAttribute("name")); 
+        hiddenInput.classList.toggle("hidden");
+        button.classList.toggle("hidden");
+
+        this.insertAdjacentElement("afterend", hiddenInput)
+        hiddenInput.insertAdjacentElement("afterend",button)
+
+    }
+
+    span.forEach(e => {
+        e.addEventListener("click", clickToEdit);
+    });
+
+    buttons.forEach(e => {
+        e.addEventListener("click", function () {
+            event.preventDefault();
+            
+            var field_id = this.id.replace("transaction_","");
+            var input = document.querySelector("#id_"+field_id);
+            var span = document.querySelector("span[name="+field_id+"]");
+
+            
+            if (input.value != span.textContent){
+                // If we changed the value:
+                console.log("We changed the input.");
+                document.querySelector("#submit_transaction_info").click();
+            }
+            else {
+                // Otherwise
+                this.classList.add("hidden");
+                span.classList.remove("hidden");
+                input.classList.add("hidden");
+            }    
+        });
+    });
+
+
+</script>
+{% endblock %}
+
 {% else %}
 
 <h2>You are not logged in.</h2>

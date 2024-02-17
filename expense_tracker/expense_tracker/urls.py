@@ -20,7 +20,7 @@ from .views import index as HomePage
 
 urlpatterns = [
     path('', HomePage,name="index"),
-    path('transaction/',include("account_manager.urls")),
+    path('account/',include("account_manager.urls")),
     path('auth/', include("auth_manager.urls")),
     path('admin/', admin.site.urls),
 ]

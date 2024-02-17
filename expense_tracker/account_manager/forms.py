@@ -23,6 +23,17 @@ class EditableTransactionFields(BaseHiddenForm):
         model = Transaction
         fields = ["description", "category", "tags"]
 
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        
+        if kwargs.get("instance") is None:
+            return
+            
+        instance: 'Transaction' = kwargs.get("instance")
+        amount = abs(instance.credit_amount) if instance.is_credit() else abs(instance.debit_amount)
+
+        self.base_fields['amount'].initial = amount
+
 class TransactionItemDetailForm(dForms.ModelForm):
     class Meta:
         model = TransactionItem

@@ -24,7 +24,7 @@
             </div>
             <div class="break"></div>
             <div>
-                <span name="amount" class="editable"><strong>Amount: </strong>${{readable_amount}}</span>
+                <strong>Amount:&nbsp;</strong>$&nbsp;<span name="amount" class="editable">{{readable_amount}}</span>
             </div>
             <div class="break"></div>
             <form action="{% url 'account_manager:transaction-edit' transaction.pk %}" method="post" novalidate>
@@ -123,21 +123,19 @@
     });
 
     buttons.forEach(e => {
-        e.addEventListener("click", function () {
-            event.preventDefault();
-            
+        e.addEventListener("click", function () {            
             var field_id = this.id.replace("transaction_","");
             var input = document.querySelector("#id_"+field_id);
             var span = document.querySelector("span[name="+field_id+"]");
 
-            
-            if (input.value != span.textContent){
+            if (input.value != Math.abs(span.textContent)){
                 // If we changed the value:
                 console.log("We changed the input.");
                 document.querySelector("#submit_transaction_info").click();
             }
             else {
                 // Otherwise
+                event.preventDefault();
                 this.classList.add("hidden");
                 span.classList.remove("hidden");
                 input.classList.add("hidden");

@@ -1,3 +1,6 @@
+# Project Specific
+expense_tracker/account_manager/management
+
 .vscode
 Resources
 *.code-workspace

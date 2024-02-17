@@ -94,11 +94,12 @@ class Account(models.Model):
 class TransactionItem(models.Model):
     transaction = models.ForeignKey('Transaction', on_delete=models.CASCADE, related_name="items")
     amount = models.DecimalField(max_digits=15, decimal_places=2)
-    description = models.CharField(max_length=100)
-    category = models.TextField(default="", blank=True)
+    description = models.TextField(default="")
+    category = models.CharField(max_length=255,default="", blank=True)
     category_certainty = models.FloatField(blank=True, null=True)
+    _itemized_from = models.ForeignKey('TransactionItem',on_delete=models.SET_NULL,null=True,default=None,blank=True,editable=False)
 
-    tags = TaggableManager()
+    tags = TaggableManager(blank=True)
 
     def readable_amount(self):
         if self.amount < 0:
@@ -108,20 +109,26 @@ class TransactionItem(models.Model):
         if self.transaction.is_credit(): 
             return self.amount
         return self.amount*-1
+    
+    def __str__(self) -> str:
+        if len(self.description) > 40:
+            return f"{self.description[:40]} | $ {self.readable_amount()}" 
+        
+        return f"{self.description} | $ {self.readable_amount()}"
 
 class Transaction(models.Model):
     transaction_date = models.DateField(blank=True)
     posted_date = models.DateField(blank=True)
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="transactions")
-    description = models.CharField(max_length=150, default="")
-    category = models.TextField(default="", blank=True)
+    description = models.TextField(default="")
+    category = models.CharField(max_length=255, blank=True)
     category_certainty = models.FloatField(blank=True, null=True)
     debit_amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, default=0.00)
     credit_amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, default=0.00)
 
     note = models.TextField(blank=True,default="")
 
-    tags = TaggableManager()
+    tags = TaggableManager(blank=True)
 
     # If the balance is not given for a transaction, null
     balance = models.DecimalField(max_digits=15, decimal_places=2, blank=True,null=True, default=None)

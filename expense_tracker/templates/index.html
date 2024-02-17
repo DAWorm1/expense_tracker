@@ -20,18 +20,18 @@
               {% endfor %}
             </ul>
             {% endif %}
-            <div class="date_form">
-              <form action="{% url 'index' %}" method="post">
-                {%csrf_token%}
-                {{dateFilterForm}}
-                <div><input type="submit" value="Filter"></div>
-              </form>
-            </div>
-            <div>
-              <p>Total Income: $ {{total_income|floatformat:2|intcomma}}</p>
-              <p>Total Expense: $ {{total_expenses|floatformat:2|intcomma}}</p>
-              <p class="{% if net > 0 %}green{%else%}red{%endif%}" >Net: $ {{net|floatformat:2|intcomma}}</p>
-            </div>
+          </div>
+          <div class="date_form">
+            <form action="{% url 'index' %}" method="post">
+              {%csrf_token%}
+              {{dateFilterForm}}
+              <div><input type="submit" value="Filter"></div>
+            </form>
+          </div>
+          <div>
+            <p>Total Income: $ {{total_income|floatformat:2|intcomma}}</p>
+            <p>Total Expense: $ {{total_expenses|floatformat:2|intcomma}}</p>
+            <p class="{% if net > 0 %}green{%else%}red{%endif%}" >Net: $ {{net|floatformat:2|intcomma}}</p>
           </div>
           <div">
             <table>

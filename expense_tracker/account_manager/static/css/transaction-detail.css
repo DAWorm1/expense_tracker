@@ -12,6 +12,12 @@
     gap: var(--sp_1);
 }
 
+.itemization-toolbar {
+  display: flex;
+  justify-content: end;
+  padding: var(--sp_0);
+}
+
 span.editable {
   transition: ease-in-out font-size .1s, padding .25s, background-color .25s, background-image .1s, width .1s, height .1s;
 }
@@ -26,6 +32,7 @@ span.editable:hover {
   font-size: 105%;
   padding: .1em;
   background: lightgray;
+  cursor: pointer;
 }
 span.editable:hover::after {
   background-image: url('/static/img/edit-pencil.svg');

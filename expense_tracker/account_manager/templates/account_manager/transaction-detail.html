@@ -20,12 +20,13 @@
             </div>
             <div class="break"></div>
             <div>
-                <strong>Amount: </strong>${{readable_amount}}
+                <span name="amount" class="editable"><strong>Amount: </strong>${{readable_amount}}</span>
             </div>
             <div class="break"></div>
-            <form action="{{transaction.pk}}/edit/" method="post" novalidate>
+            <form action="{% url 'account_manager:transaction-edit' transaction.pk %}" method="post" novalidate>
                 {%csrf_token%}
                 <div class="editable-fields">
+                    {{editable_transaction_fields.amount}} <button class="hidden" id="transaction_amount">✓</button>
                     {{editable_transaction_fields.description}} <button class="hidden" id="transaction_description">✓</button>
                     {{editable_transaction_fields.category}} <button class="hidden" id="transaction_category">✓</button>
                     {{editable_transaction_fields.tags}} <button class="hidden" id="transaction_tags">✓</button>
@@ -45,12 +46,17 @@
         <hr>
         <h3>Itemization</h3>
         <div>
-            <table>
+            
+            <div class="itemization-toolbar">
+                <button id="create_new_item_trigger">Add item to transaction</button>
+            </div> 
+            <table id="itemization_table">
                 <tr>
                     <th>Description</th>
                     <th>Amount</th>
                     <th>Category</th>
                     {% if item.tags.all.count > 0 %}<th>Tags</th>{% endif %}
+                    <th>Delete Item</th>
                 </tr>
                 {% for item in transaction.items.all %}
                 <tr>
@@ -64,9 +70,24 @@
                         </ul>
                     </td>
                     {% endif %}
+                    <td><a item_id="{{item.pk}}" href="{{transaction.pk}}/item/{{item.pk}}/delete"><img style="width: 25px;" src="{% static 'img/delete-button.svg' %}"></a></td>
                 </tr>
                 {% endfor %}
-            </table>            
+                
+            </table>        
+            
+            <div id="create_new_item_container" class="{% if new_item_start_hidden %}hidden{% endif %}">
+            <h4>Create new</h4> 
+                <form action="{% url 'account_manager:transaction-item-add' transaction.pk %}", method="post">
+                    {%csrf_token%}
+                    {{new_item_form}}
+                    <div class="top-bar">
+                        <div><input type="submit" value="Itemize"></div>
+                        <div><button id="create_new_item_cancel" class="red-bg">Cancel</button></div>
+                    </div>
+                </form>
+            </div>
+            
         </div>
     </div>
 </div>
@@ -74,8 +95,11 @@
 
 {% block script %}
 <script>
-    var span = document.querySelectorAll("span.editable")
-    var buttons = document.querySelectorAll(".editable-fields button")
+    var span = document.querySelectorAll("span.editable");
+    var buttons = document.querySelectorAll(".editable-fields button");
+    var create_new_item_trigger = document.querySelector("#create_new_item_trigger");
+    var create_new_item_cancel = document.querySelector("#create_new_item_cancel");
+    var item_delete_buttons = document.querySelectorAll("a[item_id]")
 
     function clickToEdit(event) {
         this.classList.toggle("hidden");
@@ -116,6 +140,29 @@
             }    
         });
     });
+
+    // Button to create new transaction item
+    create_new_item_trigger.addEventListener("click", function () {
+        var container = document.querySelector("#create_new_item_container");
+        container.classList.remove("hidden");
+        container.scrollIntoView();
+    });
+
+    // Cancel button when creating transaction item 
+    create_new_item_cancel.addEventListener("click", function() {
+        var container = document.querySelector("#create_new_item_container");
+        container.classList.add("hidden");
+        this.preventDefault();
+    });
+
+    // Don't allow deleting if only one transaction item present
+    item_delete_buttons.forEach((e) => {
+        e.addEventListener("click", function(event) {
+            if (item_delete_buttons.length <= 1) {
+                event.preventDefault();
+            }
+        })
+    })
 
 
 </script>

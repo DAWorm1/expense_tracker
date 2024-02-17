@@ -18,21 +18,23 @@ class BaseHiddenForm(dForms.ModelForm):
             field.widget.attrs['class'] = 'hidden'
 
 class EditableTransactionFields(BaseHiddenForm):
-    amount = dForms.DecimalField(max_digits=15,decimal_places=2)
     class Meta:
         model = Transaction
         fields = ["description", "category", "tags"]
 
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
-        
-        if kwargs.get("instance") is None:
-            return
-            
+        self.fields['amount'] = dForms.DecimalField(max_digits=15,decimal_places=2)
+        self.fields['amount'].widget.attrs['class'] = 'hidden'
+
         instance: 'Transaction' = kwargs.get("instance")
+
+        if instance is None:
+            return 
+        
         amount = abs(instance.credit_amount) if instance.is_credit() else abs(instance.debit_amount)
 
-        self.base_fields['amount'].initial = amount
+        self.fields['amount'].initial = amount
 
 class TransactionItemDetailForm(dForms.ModelForm):
     class Meta:

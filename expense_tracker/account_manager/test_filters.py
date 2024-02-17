@@ -6,7 +6,7 @@ from datetime import date
 
 class FilterTestCase(TestCase):
     def setUp(self) -> None:
-        self.checking = Account.objects.create(name="***REMOVED***", type=1) #Checking Account
+        self.checking = Account.objects.create(name="Bank of America", type=1) #Checking Account
         self.credit = Account.objects.create(name="Discover", type=2) #Credit Card Account
 
         self.checking_transactions = [

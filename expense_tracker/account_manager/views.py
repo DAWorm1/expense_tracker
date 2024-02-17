@@ -1,9 +1,15 @@
 from django.shortcuts import render
 from django.urls import reverse
+from django.template.defaultfilters import slugify
+from django.core.validators import validate_slug
+from django.core.exceptions import ValidationError
 from .models import Transaction, TransactionItem
+from django.db.models import Sum
 from .forms import EditableTransactionFields, TransactionItemDetailForm
+from .filters import Category
 from django.http.response import HttpResponseRedirect
 from typing import TYPE_CHECKING
+from decimal import Decimal
 
 if TYPE_CHECKING:
     from django.http.request import HttpRequest
@@ -33,7 +39,45 @@ def _get_transaction_detail_context(tr: Transaction, form: TransactionItemDetail
     }
     return context
 
+def category_detail(request, name:str):
+    context = {
+        "name": name
+    }
+
+    context["category_transactions"] = Transaction.objects.filter(category=name)
+
+    return render(request,"account_manager/category-detail.html",context=context)
+
 # Create your views here.
+def category_index(request):
+    context = {}
+
+    all_categories: list[str] = [cat["category"] for cat in Transaction.objects.all().order_by("category").values("category").distinct()]
+
+    # Get data for each category and create Category objects to send to Template
+    category_filters = {}
+    for cat in all_categories:
+        all_tr = Transaction.objects.filter(category=cat)
+        credit_amount = all_tr.aggregate(Sum("credit_amount"))["credit_amount__sum"]
+        debit_amount = all_tr.aggregate(Sum("debit_amount"))["debit_amount__sum"]
+        amount = credit_amount - debit_amount
+        
+        verified_transactions = 0
+        for tr in all_tr:
+            if tr.is_category_verified():
+                verified_transactions += 1
+        
+        category_filters[cat] = Category(
+            tr.category,
+            amount,
+            all_tr.count(),
+            verified_transactions)
+
+    context["category_filters"] = sorted(category_filters.values(), key=lambda x: x.amount)
+
+    return render(request,"account_manager/category-index.html", context=context)
+
+
 def transaction_detail(request, id: int):
     tr = Transaction.objects.get(pk=id)
 
@@ -49,6 +93,11 @@ def transaction_edit(request, id: int):
         made_changes = True
     if request.POST.get("category"):
         tr.category = request.POST["category"]
+        try:
+            validate_slug(request.POST["category"])
+        except ValidationError:
+            tr.category = slugify(request.POST["category"])
+        
         tr.category_certainty = 1
         made_changes = True
     if request.POST.get("tags"):

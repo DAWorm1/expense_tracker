@@ -1,0 +1,19 @@
+{% include 'base.html' %}
+
+{% if request.user.is_authenticated %}
+{% load static %}
+{% load template_filters %}
+{% load humanize %}
+
+
+{% block content %}
+The name of this category is: {{name}}
+
+{% with category_transactions as transactions %}
+{% include 'transaction_table.html' %}
+{% endwith %}
+
+
+{% endblock %}
+
+{% endif %}

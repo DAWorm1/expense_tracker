@@ -1,0 +1,45 @@
+{% include 'base.html' %}
+
+{% if request.user.is_authenticated %}
+{% load static %}
+{% load template_filters %}
+{% load humanize %}
+
+{% block header %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="content-container">
+        <div class="top-bar">
+            <a href="{% url 'index' %}"><p>< Transactions</p></a>
+        </div>
+
+        <table>
+            <tr>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Percentage of verified transactions</th>
+            </tr>
+            {% for cat in category_filters %}
+            <tr>
+              <td><a href="{% url 'account_manager:category-detail' cat.name%}">{{cat.name}}</a></td>
+              <td class="{% if cat.amount < 0 %}red{%elif cat.amount > 0%}green{%endif%}" >${{cat.amount|floatformat:2|intcomma}}</td>
+              <td>{{cat.verified_percentage|floatformat:2}} % <span class="helper-text">({{cat.verified_amount}}/{{cat.total_amount}})</span></td>
+            </tr>
+            {% endfor %}
+          </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{% endblock %}
+{% endif %}
+
+
+
+
+ REQUIRED CONTEXT
+
+ category_filters

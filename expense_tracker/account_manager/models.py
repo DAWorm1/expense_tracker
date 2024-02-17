@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.core.validators import validate_slug
+from django.forms import ValidationError
+from django.template.defaultfilters import slugify
 from taggit.managers import TaggableManager
 import pandas as pd
 from .templates import TransactionTemplate
@@ -70,12 +73,22 @@ class Account(models.Model):
                 transactions_skipped.append(tr)
                 continue
 
+            cat_name = slugify(tr.category)
+
+            # Check category is valid
+            try:
+                validate_slug(cat_name)
+            except ValidationError:
+                transactions_skipped.append(tr)
+                print(f"WARNING: Category: {cat_name} is an invalid name.")
+                continue
+
             Transaction.objects.create(
                 transaction_date=tr.transaction_date,
                 posted_date=tr.posted_date,
                 account=self,
                 description=tr.description,
-                category=tr.category,
+                category=cat_name,
                 category_certainty=None,
                 debit_amount=tr.debit_amount,
                 credit_amount=tr.credit_amount
@@ -121,13 +134,12 @@ class Transaction(models.Model):
     posted_date = models.DateField(blank=True)
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="transactions")
     description = models.TextField(default="")
-    category = models.CharField(max_length=255, blank=True)
+    category = models.CharField(max_length=255, blank=True, validators=[validate_slug,])
     category_certainty = models.FloatField(blank=True, null=True)
     debit_amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, default=0.00)
     credit_amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, default=0.00)
 
     note = models.TextField(blank=True,default="")
-
     tags = TaggableManager(blank=True)
 
     # If the balance is not given for a transaction, null
@@ -135,7 +147,20 @@ class Transaction(models.Model):
 
     def is_credit(self):
         return True if self.credit_amount > 0 else False
-
+    
+    def is_category_verified(self):
+        if self.category_certainty == 1:
+            return True
+        return False
+    
+    def set_category(self, category: str):
+        self.category_certainty = 1
+        self.category = category
+        self.save(update_fields=[
+            "category_certainty",
+            "category"
+        ])
+        
     def readable_amount(self):
         if abs(self.debit_amount) > 0:
             return abs(self.debit_amount)*-1
@@ -143,6 +168,12 @@ class Transaction(models.Model):
             return abs(self.credit_amount)
         return Decimal(0)
     readable_amount.short_description="Amount"
+
+    class Meta:
+        indexes = [
+            models.Index(models.functions.Lower("category").desc(),name="category_name_lower_idx")
+        ]
+        
 
 
 

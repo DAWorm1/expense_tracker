@@ -1,0 +1,20 @@
+<table>
+    <tr>
+      <th>Date</th>
+      <th>Description</th>
+      <th>Account</th>
+      <th>Amount</th>
+      <th>Category</th>
+      <th>Has category been verified?</th>
+    </tr>
+    {% for tr in transactions %}
+    <tr>
+      <td>{{tr.transaction_date}}</td>
+      <td><a href="{% url 'account_manager:transaction-detail' tr.pk %}">{{tr.description}}</a></td>
+      <td>{{tr.account.name}}</td>
+      <td class="{%if tr.readable_amount < 0%}red{%elif tr.readable_amount > 0%}green{%endif%}" > {{tr.readable_amount}}</td>
+      <td><a href="{% url 'account_manager:category-detail' tr.category%}">{{tr.category}}</a></td>
+      <td class="{% if tr.is_category_verified %}green{%else%}red{%endif%}" >{% if tr.is_category_verified %}✓{% else %}𝕏{%endif%}</td>
+    </tr>
+    {% endfor %}
+  </table>

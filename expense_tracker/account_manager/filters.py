@@ -4,11 +4,24 @@ from datetime import date,timedelta
 from dateutil.relativedelta import relativedelta
 from .models import Transaction
 import calendar
+from dataclasses import dataclass
+from decimal import Decimal
 
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from django.db.models import QuerySet
+
+@dataclass
+class Category():
+    name: str
+    amount: Decimal
+    total_amount: int
+    verified_amount: int
+    
+    @property
+    def verified_percentage(self):
+        return Decimal((self.verified_amount / self.total_amount)*100)
 
 class Period(IntEnum):
     THIS_MONTH = 1

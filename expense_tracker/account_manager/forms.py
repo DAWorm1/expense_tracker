@@ -34,7 +34,7 @@ class EditableDebitTransactionForm(BaseHiddenForm):
         widgets = {
             "description": HoverToEditTextWidget,
             "category": HoverToEditTextWidget,
-            'debit_amount': HoverToEditNumberWidget,
+            'debit_amount': HoverToEditNumberWidget(attrs={'step': 0.01}),
         }
 
 class EditableCreditTransactionForm(BaseHiddenForm):
@@ -45,7 +45,7 @@ class EditableCreditTransactionForm(BaseHiddenForm):
         widgets = {
             "description": HoverToEditTextWidget,
             "category": HoverToEditTextWidget,
-            'credit_amount': HoverToEditNumberWidget,
+            'credit_amount': HoverToEditNumberWidget(attrs={'step': 0.01}),
         }
 
 class TransactionItemDetailForm(dForms.ModelForm):

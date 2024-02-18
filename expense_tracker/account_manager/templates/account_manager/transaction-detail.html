@@ -97,13 +97,26 @@
         addEventListenersToEditableTransactionForm()
     }
 
+    function hideActiveInput() {
+        activeInput = document.querySelector(".editable-fields input[name]:not(.hidden)")
+        
+        if (!activeInput) return
+
+        var name = activeInput.getAttribute("name")
+        
+        activeInput.classList.add("hidden")
+        button.classList.add("hidden")
+        editable_transaction_form.querySelector(".editable-fields span[name="+name+"]").classList.remove("hidden")
+    }
+
     // Shows the input and button and hides the clicked span element. 
-    function editableTransactionCLickToEditField(event) {
-        this.classList.toggle("hidden");
+    function editableTransactionClickToEditField(event) {
+        hideActiveInput()
+        this.classList.add("hidden");
         
         var hiddenInput = document.querySelector("#id_"+this.getAttribute("name")); 
-        hiddenInput.classList.toggle("hidden");
-        button.classList.toggle("hidden");
+        hiddenInput.classList.remove("hidden");
+        button.classList.remove("hidden");
     }
 
     // Set up event listeners on the editable transaction form. 
@@ -113,7 +126,7 @@
             
         // Listen for a click on the editable fields. When these are clicked the input and button will be shown
         span.forEach(e => {
-            e.addEventListener("click", editableTransactionCLickToEditField)
+            e.addEventListener("click", editableTransactionClickToEditField)
         });
 
         // Listen for a click on the confirm button
@@ -136,9 +149,7 @@
             } else {
                 // Otherwise, prevent the form from submitting and hide the input and button.
                 event.preventDefault();
-                this.classList.add("hidden");
-                span.classList.remove("hidden");
-                input.classList.add("hidden");
+                hideActiveInput()
             }
         });
     }

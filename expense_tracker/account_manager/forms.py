@@ -1,4 +1,4 @@
-from django.forms import forms,fields
+from django.forms import forms,fields,widgets
 from django import forms as dForms
 from django.core.exceptions import ValidationError
 from .models import Transaction,TransactionItem
@@ -15,26 +15,38 @@ class BaseHiddenForm(dForms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
-            field.widget.attrs['class'] = 'hidden'
+            field.widget.attrs['class'] = ''
 
-class EditableTransactionFields(BaseHiddenForm):
+class HoverToEditTextWidget(widgets.Input):
+    input_type = "text"
+    template_name = "account_manager/widgets/hover_input.html"
+
+class HoverToEditNumberWidget(widgets.Input):
+    input_type = "number"
+    template_name = "account_manager/widgets/hover_input.html"
+    
+
+class EditableDebitTransactionForm(BaseHiddenForm):
+    #amount = dForms.DecimalField(max_digits=15,decimal_places=2,widget=HoverToEditNumberWidget)
     class Meta:
         model = Transaction
-        fields = ["description", "category", "tags"]
+        fields = ['description', 'category','debit_amount']
+        widgets = {
+            "description": HoverToEditTextWidget,
+            "category": HoverToEditTextWidget,
+            'debit_amount': HoverToEditNumberWidget,
+        }
 
-    def __init__(self,*args,**kwargs):
-        super().__init__(*args,**kwargs)
-        self.fields['amount'] = dForms.DecimalField(max_digits=15,decimal_places=2)
-        self.fields['amount'].widget.attrs['class'] = 'hidden'
-
-        instance: 'Transaction' = kwargs.get("instance")
-
-        if instance is None:
-            return 
-        
-        amount = abs(instance.credit_amount) if instance.is_credit() else abs(instance.debit_amount)
-
-        self.fields['amount'].initial = amount
+class EditableCreditTransactionForm(BaseHiddenForm):
+    #amount = dForms.DecimalField(max_digits=15,decimal_places=2,widget=HoverToEditNumberWidget)
+    class Meta:
+        model = Transaction
+        fields = ['description', 'category','credit_amount']
+        widgets = {
+            "description": HoverToEditTextWidget,
+            "category": HoverToEditTextWidget,
+            'credit_amount': HoverToEditNumberWidget,
+        }
 
 class TransactionItemDetailForm(dForms.ModelForm):
     class Meta:

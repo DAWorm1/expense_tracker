@@ -12,11 +12,6 @@
     gap: var(--sp_1);
 }
 
-.transaction-metadata-container > div {
-  display: flex;
-  align-items: baseline;
-}
-
 .itemization-toolbar {
   display: flex;
   justify-content: end;

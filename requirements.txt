@@ -2,3 +2,4 @@ pandas
 matplotlib
 django
 django-taggit
+django-htmx

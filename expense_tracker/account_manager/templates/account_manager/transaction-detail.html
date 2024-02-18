@@ -1,4 +1,4 @@
-{% include 'base.html' %}
+{% extends 'base.html' %}
 
 {% if request.user.is_authenticated %}
 {% load static %}
@@ -23,29 +23,8 @@
                 <strong>Posted Date</strong>: {{transaction_metadata.posted_date}}
             </div>
             <div class="break"></div>
-            <div>
-                <strong>Amount:&nbsp;</strong>$&nbsp;<span name="amount" class="editable">{{readable_amount}}</span>
-            </div>
-            <div class="break"></div>
-            <form action="{% url 'account_manager:transaction-edit' transaction.pk %}" method="post" novalidate>
-                {%csrf_token%}
-                <div class="editable-fields">
-                    {{editable_transaction_fields.amount}} <button class="hidden" id="transaction_amount">✓</button>
-                    {{editable_transaction_fields.description}} <button class="hidden" id="transaction_description">✓</button>
-                    {{editable_transaction_fields.category}} <button class="hidden" id="transaction_category">✓</button>
-                    {{editable_transaction_fields.tags}} <button class="hidden" id="transaction_tags">✓</button>
-                    <input id="submit_transaction_info" class="hidden" type="submit">
-                </div>
-                {% for key,value in transaction_metadata.items %}
-                {% if 'date' not in key %}
-                <div class="transaction-metadata-item {%if 'date' in key%}date{%endif%}">
-                    <strong>{{key|humanize_underscore_string}}</strong>: {%if not 'account' in key%}<span name="{{key|lower}}" class="editable">{{value}}{%else%}{{value.name}}{%endif%}</span>
-                </div>
-                <div class="break"></div>            
-                {% endif %}
-                {% endfor %}
-                <br />
-            </form>
+
+            {% include 'account_manager/transaction_editable_fields.html' %}
         </div>
         <hr>
         <h3>Itemization</h3>
@@ -99,50 +78,71 @@
 
 {% block script %}
 <script>
-    var span = document.querySelectorAll("span.editable");
-    var buttons = document.querySelectorAll(".editable-fields button");
     var create_new_item_trigger = document.querySelector("#create_new_item_trigger");
     var create_new_item_cancel = document.querySelector("#create_new_item_cancel");
     var item_delete_buttons = document.querySelectorAll("a[item_id]")
 
-    function clickToEdit(event) {
+    // Set up editable transaction form for first-time page load
+    var editable_transaction_form = document.querySelector("#transaction-editable-container")
+    var span = document.querySelectorAll("span.editable");
+    var button = document.querySelector("#transaction-edit-button");
+    addEventListenersToEditableTransactionForm()
+
+    // Gets new DOM elements and sets up event listeners on new elements.
+    function editableTransactionOnFormReload(event) {
+        console.log("HTMX Reload event fired on editable-transaction-form.")
+        editable_transaction_form = document.querySelector("#transaction-editable-container")
+        span = document.querySelectorAll("span.editable");
+        button = document.querySelector("#transaction-edit-button");
+        addEventListenersToEditableTransactionForm()
+    }
+
+    // Shows the input and button and hides the clicked span element. 
+    function editableTransactionCLickToEditField(event) {
         this.classList.toggle("hidden");
         
-        var button = document.querySelector("#transaction_"+this.getAttribute("name"))
         var hiddenInput = document.querySelector("#id_"+this.getAttribute("name")); 
         hiddenInput.classList.toggle("hidden");
         button.classList.toggle("hidden");
-
-        this.insertAdjacentElement("afterend", hiddenInput)
-        hiddenInput.insertAdjacentElement("afterend",button)
-
     }
 
-    span.forEach(e => {
-        e.addEventListener("click", clickToEdit);
-    });
+    // Set up event listeners on the editable transaction form. 
+    function addEventListenersToEditableTransactionForm() {
+        // Listen for HTMX reload. 
+        editable_transaction_form.addEventListener("htmx:afterOnLoad", editableTransactionOnFormReload)
+            
+        // Listen for a click on the editable fields. When these are clicked the input and button will be shown
+        span.forEach(e => {
+            e.addEventListener("click", editableTransactionCLickToEditField)
+        });
 
-    buttons.forEach(e => {
-        e.addEventListener("click", function () {            
-            var field_id = this.id.replace("transaction_","");
-            var input = document.querySelector("#id_"+field_id);
-            var span = document.querySelector("span[name="+field_id+"]");
+        // Listen for a click on the confirm button
+        button.addEventListener("click", function (event) {  
+            activeInput = document.querySelector(".editable-fields input[name]:not(.hidden)")
+            
+            var name = activeInput.getAttribute('name')
+            var input = document.querySelector("#id_"+name);
+            var span = document.querySelector("span[name="+name+"]");
 
-            if (input.value != Math.abs(span.textContent)){
-                // If we changed the value:
+            if (!name.includes("amount")) {
+                var normalized_content = span.textContent
+            } else {
+                var normalized_content = Math.abs(span.textContent)
+            }   
+
+            // Check if we've changed the input. If we have, let the form submit
+            if (input.value != normalized_content) {
                 console.log("We changed the input.");
-                document.querySelector("#submit_transaction_info").click();
-            }
-            else {
-                // Otherwise
+            } else {
+                // Otherwise, prevent the form from submitting and hide the input and button.
                 event.preventDefault();
                 this.classList.add("hidden");
                 span.classList.remove("hidden");
                 input.classList.add("hidden");
-            }    
+            }
         });
-    });
-
+    }
+    
     // Button to create new transaction item
     create_new_item_trigger.addEventListener("click", function () {
         var container = document.querySelector("#create_new_item_container");

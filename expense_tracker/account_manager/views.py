@@ -1,26 +1,28 @@
 from django.shortcuts import render
 from django.urls import reverse
-from django.template.defaultfilters import slugify
-from django.core.validators import validate_slug
-from django.core.exceptions import ValidationError
 from .models import Transaction, TransactionItem
 from django.db.models import Sum
-from .forms import EditableTransactionFields, TransactionItemDetailForm
+from .forms import EditableDebitTransactionForm,EditableCreditTransactionForm,TransactionItemDetailForm
 from .filters import Category
 from django.http.response import HttpResponseRedirect
 from typing import TYPE_CHECKING
-from decimal import Decimal
 
 if TYPE_CHECKING:
     from django.http.request import HttpRequest
 
-def _get_transaction_detail_context(tr: Transaction, form: TransactionItemDetailForm|None = None):
-    if form is None:
+def _get_transaction_detail_context(tr: Transaction, new_item_form_post: TransactionItemDetailForm|None = None, editable_transaction_form_post: EditableDebitTransactionForm|EditableCreditTransactionForm|None = None):
+    if new_item_form_post is None:
         new_item_form = TransactionItemDetailForm(tr)
     else:
-        new_item_form = form
+        new_item_form = new_item_form_post
+
+    if editable_transaction_form_post is None:
+
+        editable_transaction_form = EditableCreditTransactionForm(instance=tr) if tr.is_credit() else EditableDebitTransactionForm(instance=tr) 
+    else:
+        editable_transaction_form = editable_transaction_form_post
     
-    new_item_start_hidden = True if form is None else False
+    new_item_start_hidden = True if new_item_form_post is None else False
 
     context = {
         "readable_amount": tr.readable_amount(),
@@ -33,7 +35,7 @@ def _get_transaction_detail_context(tr: Transaction, form: TransactionItemDetail
         },
         "id": tr.pk,
         "transaction": tr,
-        "editable_transaction_fields": EditableTransactionFields(instance=tr),
+        "editable_transaction_fields": editable_transaction_form,
         "new_item_form": new_item_form,
         "new_item_start_hidden": new_item_start_hidden
     }
@@ -84,38 +86,6 @@ def transaction_detail(request, id: int):
     context = _get_transaction_detail_context(tr)
     return render(request,"account_manager/transaction-detail.html",context=context)
 
-def transaction_edit(request, id: int):
-    tr = Transaction.objects.get(pk=id)
-    made_changes = False
-
-    if request.POST.get("description"):
-        tr.description = request.POST["description"]
-        made_changes = True
-    if request.POST.get("category"):
-        tr.category = request.POST["category"]
-        try:
-            validate_slug(request.POST["category"])
-        except ValidationError:
-            tr.category = slugify(request.POST["category"])
-        
-        tr.category_certainty = 1
-        made_changes = True
-    if request.POST.get("tags"):
-        for tag in request.POST.get("tags").split(","):
-            tr.tags.add(tag)
-            made_changes = True
-    if request.POST.get("amount"):
-        if tr.is_credit():
-            tr.credit_amount = request.POST.get("amount")
-        else:
-            tr.debit_amount = request.POST.get("amount")
-        made_changes = True
-        
-    if made_changes:
-        tr.save()
-
-    return HttpResponseRedirect(reverse("account_manager:transaction-detail",args=[id]))
-
 def transaction_item_create(request: 'HttpRequest', id: int):
     tr = Transaction.objects.get(pk=id)
 
@@ -124,7 +94,7 @@ def transaction_item_create(request: 'HttpRequest', id: int):
         return render(
             request,
             "account_manager/transaction-detail.html",
-            context=_get_transaction_detail_context(tr,form))
+            context=_get_transaction_detail_context(tr,new_item_form_post=form))
     
     clean_data = form.cleaned_data
     

@@ -1,0 +1,7 @@
+<form id="transaction-editable-container"
+    hx-post="{% url 'account_manager:transaction-edit' transaction.pk %}"
+    hx-swap="outerHTML">
+    {% csrf_token %}
+    {{editable_transaction_fields}}
+    <button class="hidden" id="transaction-edit-button" type='submit'>✓</button>
+</form>

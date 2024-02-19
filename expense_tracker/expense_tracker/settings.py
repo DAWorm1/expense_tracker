@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'django_htmx',
     'taggit',
     'account_manager',
-    'auth_manager'
+    'auth_manager',
+    'ai_manager'
 ]
 
 MIDDLEWARE = [

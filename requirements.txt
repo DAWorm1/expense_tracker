@@ -3,3 +3,9 @@ matplotlib
 django
 django-taggit
 django-htmx
+langchain
+ollama
+faiss-cpu
+langchain-community
+
+sentence-transformers

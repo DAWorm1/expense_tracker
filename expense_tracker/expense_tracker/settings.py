@@ -74,6 +74,36 @@ TEMPLATES = [
     },
 ]
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "logs.txt",
+        },
+        "ai_file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "ai_manager/logs.txt",
+        }
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+        "AI": {
+            "handlers": ["ai_file"],
+            "level": "DEBUG",
+            "propagate": True
+        }
+    },
+}
+
+
 WSGI_APPLICATION = 'expense_tracker.wsgi.application'
 
 

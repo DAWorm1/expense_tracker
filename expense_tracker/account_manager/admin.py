@@ -3,7 +3,10 @@ from django.contrib import admin
 from django.db.models.query import QuerySet
 from django.http.request import HttpRequest
 from .models import Transaction,Account,TransactionItem
+from .utils import start_django_admin_subprocess
 from django.core.management import call_command
+from django.conf import settings
+import subprocess
 
 # Register your models here.
 
@@ -17,13 +20,18 @@ def get_vendors(modeladmin, request, queryset):
     for tr in queryset:
         ids.append(tr.pk)
     
-    call_command("get_vendor_name_from_transaction_description",*ids)
-    modeladmin.message_user(request,f"Got the vendors for {len(ids)} Transaction(s)")
+    start_django_admin_subprocess(
+        "get_vendor_name_from_transaction_description",
+        [str(id) for id in ids]
+    )
+
+    # call_command("get_vendor_name_from_transaction_description",*ids)
+    modeladmin.message_user(request,f"Getting the vendors for {len(ids)} Transaction(s)")
 
 
 class TransactionAdmin(admin.ModelAdmin):
-    list_filter=['account',]
-    list_display=['transaction_date','description','readable_amount','category']
+    list_filter=['account',"vendor"]
+    list_display=['transaction_date','description','readable_amount','category','vendor']
     inlines = [
         TransactionItemInlineAdmin,
     ]

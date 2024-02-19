@@ -1,5 +1,6 @@
 from .models import Transaction
 from .forms import EditableCreditTransactionForm,EditableDebitTransactionForm
+from .utils import start_django_admin_subprocess
 from django.shortcuts import render
 
 def transaction_edit(request, id: int):
@@ -18,6 +19,10 @@ def transaction_edit(request, id: int):
         if "vendor" in form.changed_data:
             print("We changed the vendor")
             form.instance.set_vendor(form.cleaned_data["vendor"])
+            start_django_admin_subprocess(
+                "add_item_to_vendor_database",
+                [tr.description,form.cleaned_data["vendor"]]
+            )
         
         form.save()
 

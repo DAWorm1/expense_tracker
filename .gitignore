@@ -1,5 +1,6 @@
 # Project Specific
 expense_tracker/account_manager/management
+*.csv
 
 .vscode
 Resources

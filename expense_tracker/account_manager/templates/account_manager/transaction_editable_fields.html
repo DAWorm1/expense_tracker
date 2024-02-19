@@ -2,6 +2,15 @@
     hx-post="{% url 'account_manager:transaction-edit' transaction.pk %}"
     hx-swap="outerHTML">
     {% csrf_token %}
+    <div class="top-bar">
+        <div class="transaction-metadata-item">
+            <strong>Category Verified: </strong> {{transaction.is_category_verified}}
+        </div>
+        <div class="transaction-metadata-item">
+            <strong>Vendor Verified: </strong> {{transaction.is_vendor_verified}}
+        </div>
+    </div>
+
     {{editable_transaction_fields}}
     <button class="hidden" id="transaction-edit-button" type='submit'>✓</button>
 </form>

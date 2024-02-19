@@ -12,7 +12,15 @@ def transaction_edit(request, id: int):
     }
     
     if form.is_valid():
+        if "category" in form.changed_data:
+            print("We changed the category")
+            form.instance.set_category(form.cleaned_data["category"])
+        if "vendor" in form.changed_data:
+            print("We changed the vendor")
+            form.instance.set_vendor(form.cleaned_data["vendor"])
+        
         form.save()
+
         context["editable_transaction_fields"] = EditableCreditTransactionForm(instance=tr) if tr.is_credit() else EditableDebitTransactionForm(instance=tr)
         return render(request,"account_manager/transaction_editable_fields.html",context=context)
     else:

@@ -1,4 +1,4 @@
 <div class="editable-fields" id="editable_field_container_{{widget.name}}"> 
-{% if widget.value != None %}<p><span class="editable" name="{{widget.name}}" >{{ widget.value|stringformat:'s' }}</span></p>{% endif %}
+<p><span class="editable" name="{{widget.name}}" >{% if widget.value != None %}{{ widget.value|stringformat:'s' }}{%else%}NONE{% endif %}</span></p>
 <input class="hidden" type="{{ widget.type }}" name="{{ widget.name }}"{% if widget.value != None %} value="{{ widget.value|stringformat:'s' }}"{% endif %}{% include "django/forms/widgets/attrs.html" %}>
 </div>

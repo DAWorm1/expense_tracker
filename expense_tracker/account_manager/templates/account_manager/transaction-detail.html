@@ -25,6 +25,7 @@
             <div class="break"></div>
 
             {% include 'account_manager/transaction_editable_fields.html' %}
+
         </div>
         <hr>
         <h3>Itemization</h3>
@@ -117,6 +118,7 @@
         var hiddenInput = document.querySelector("#id_"+this.getAttribute("name")); 
         hiddenInput.classList.remove("hidden");
         button.classList.remove("hidden");
+        hiddenInput.select()
     }
 
     // Set up event listeners on the editable transaction form. 

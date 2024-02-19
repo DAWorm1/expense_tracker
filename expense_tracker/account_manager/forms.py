@@ -12,10 +12,7 @@ class DateFilterForm(forms.Form):
     end_date = fields.DateField(label="End Date",widget=DateInput)
 
 class BaseHiddenForm(dForms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields.values():
-            field.widget.attrs['class'] = ''
+    pass
 
 class HoverToEditTextWidget(widgets.Input):
     input_type = "text"
@@ -30,10 +27,11 @@ class EditableDebitTransactionForm(BaseHiddenForm):
     #amount = dForms.DecimalField(max_digits=15,decimal_places=2,widget=HoverToEditNumberWidget)
     class Meta:
         model = Transaction
-        fields = ['description', 'category','debit_amount']
+        fields = ['description', 'category', 'vendor', 'debit_amount']
         widgets = {
             "description": HoverToEditTextWidget,
             "category": HoverToEditTextWidget,
+            'vendor': HoverToEditTextWidget,
             'debit_amount': HoverToEditNumberWidget(attrs={'step': 0.01}),
         }
 
@@ -41,10 +39,11 @@ class EditableCreditTransactionForm(BaseHiddenForm):
     #amount = dForms.DecimalField(max_digits=15,decimal_places=2,widget=HoverToEditNumberWidget)
     class Meta:
         model = Transaction
-        fields = ['description', 'category','credit_amount']
+        fields = ['description', 'category', 'vendor', 'credit_amount']
         widgets = {
             "description": HoverToEditTextWidget,
             "category": HoverToEditTextWidget,
+            'vendor': HoverToEditTextWidget,
             'credit_amount': HoverToEditNumberWidget(attrs={'step': 0.01}),
         }
 

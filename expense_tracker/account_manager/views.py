@@ -107,7 +107,6 @@ def transaction_item_create(request: 'HttpRequest', id: int):
         "amount":None,
         "description":None,
         "category":None,
-        "category_certainty":None,
         "transaction": None,
     }
     
@@ -126,10 +125,6 @@ def transaction_item_create(request: 'HttpRequest', id: int):
     # Check for the optional fields
     if tr_item_fields["category"] in [None,""]:
         tr_item_fields["category"] = ""
-        tr_item_fields["category_certainty"] = 0
-    else:
-        # A category was given when creating this item. We are 100% certain of the accuracy of this category
-        tr_item_fields["category_certainty"] = 1
 
     tr_item = TransactionItem(**tr_item_fields)
 

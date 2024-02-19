@@ -18,7 +18,7 @@ class UtilsTestCase(TestCase):
                 account=self.checking,
                 description="Transaction",
                 category="",
-                category_certainty=None,
+                category_certainty=0,
                 debit_amount=Decimal(20),
                 credit_amount=Decimal(0)
             ),
@@ -28,7 +28,7 @@ class UtilsTestCase(TestCase):
                 account=self.checking,
                 description="Transaction",
                 category="",
-                category_certainty=None,
+                category_certainty=0,
                 debit_amount=Decimal(50),
                 credit_amount=Decimal(0)
             ),
@@ -38,7 +38,7 @@ class UtilsTestCase(TestCase):
                 account=self.checking,
                 description="Deposit",
                 category="",
-                category_certainty=None,
+                category_certainty=0,
                 debit_amount=Decimal(0),
                 credit_amount=Decimal(4000)
             ),   
@@ -51,7 +51,7 @@ class UtilsTestCase(TestCase):
                 account=self.credit,
                 description="Transaction",
                 category="",
-                category_certainty=None,
+                category_certainty=0,
                 debit_amount=Decimal(5),
                 credit_amount=Decimal(0)
             ),
@@ -61,7 +61,7 @@ class UtilsTestCase(TestCase):
                 account=self.credit,
                 description="Transaction",
                 category="",
-                category_certainty=None,
+                category_certainty=0,
                 debit_amount=Decimal(20),
                 credit_amount=Decimal(0)
             ),
@@ -72,7 +72,7 @@ class UtilsTestCase(TestCase):
                 account=self.checking,
                 description="Transaction",
                 category="",
-                category_certainty=None,
+                category_certainty=0,
                 debit_amount=Decimal(0),
                 credit_amount=Decimal(25)
             ),

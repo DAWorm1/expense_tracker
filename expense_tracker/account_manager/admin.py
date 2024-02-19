@@ -16,6 +16,22 @@ class TransactionAdmin(admin.ModelAdmin):
     inlines = [
         TransactionItemInlineAdmin,
     ]
+    fields = [
+        "transaction_date",
+        "posted_date",
+        ("is_vendor_verified",
+        "is_category_verified"),
+        "account",
+        "description",
+        "category",
+        "debit_amount",
+        "credit_amount",
+        "vendor",
+    ]
+    readonly_fields = [
+        "is_vendor_verified",
+        "is_category_verified"
+    ]
     
 class AccountAdmin(admin.ModelAdmin):
     pass

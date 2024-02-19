@@ -89,7 +89,7 @@ class Account(models.Model):
                 account=self,
                 description=tr.description,
                 category=cat_name,
-                category_certainty=None,
+                category_certainty=0,
                 debit_amount=tr.debit_amount,
                 credit_amount=tr.credit_amount
             )
@@ -109,7 +109,6 @@ class TransactionItem(models.Model):
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     description = models.TextField(default="")
     category = models.CharField(max_length=255,default="", blank=True)
-    category_certainty = models.FloatField(blank=True, null=True)
     _itemized_from = models.ForeignKey('TransactionItem',on_delete=models.SET_NULL,null=True,default=None,blank=True,editable=False)
 
     tags = TaggableManager(blank=True)
@@ -135,9 +134,11 @@ class Transaction(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="transactions")
     description = models.TextField(default="")
     category = models.CharField(max_length=255, blank=True, validators=[validate_slug,])
-    category_certainty = models.FloatField(blank=True, null=True)
+    category_certainty = models.FloatField(blank=True, default=0,editable=False)
     debit_amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, default=0.00)
     credit_amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, default=0.00)
+    vendor = models.CharField(max_length=255, blank=True, default="")
+    vendor_certainty = models.FloatField(blank=True,default=0,editable=False)
 
     note = models.TextField(blank=True,default="")
     tags = TaggableManager(blank=True)
@@ -149,16 +150,29 @@ class Transaction(models.Model):
         return True if self.credit_amount > 0 else False
     
     def is_category_verified(self):
-        if self.category_certainty == 1:
-            return True
-        return False
+        return (self.category_certainty == 1)
     
+    def is_vendor_verified(self):
+        return (self.vendor_certainty == 1)
+
     def set_category(self, category: str):
         self.category_certainty = 1
         self.category = category
+        
+        self.items.all().update(category=category)
+        
         self.save(update_fields=[
             "category_certainty",
             "category"
+        ])
+
+    def set_vendor(self, vendor: str):
+        self.vendor_certainty = 1
+        self.vendor = vendor
+        
+        self.save(update_fields=[
+            "vendor_certainty",
+            "vendor"
         ])
         
     def readable_amount(self):
@@ -193,7 +207,6 @@ def _create_default_transaction_items(sender: 'Transaction', instance: 'Transact
             amount = abs(instance.readable_amount()),
             description = instance.description,
             category = instance.category,
-            category_certainty = instance.category_certainty
         )
         item.save()
         item.tags.add(*[tag for tag in instance.tags.all()])

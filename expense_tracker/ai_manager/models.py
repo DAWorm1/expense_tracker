@@ -112,6 +112,8 @@ class GetVendor_AIModel(models.Model):
     
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
+        if not self.pk:
+            return
         if self.db == "":
             print("initializing DB for first time")
             loader = CSVLoader(file_path=settings.BASE_DIR / "ai_manager/initial_data.csv",source_column="Transaction")

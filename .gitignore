@@ -1,6 +1,8 @@
 # Project Specific
 expense_tracker/account_manager/management
 *.csv
+logs.txt
+vendor_from_descriptions/
 
 .vscode
 Resources

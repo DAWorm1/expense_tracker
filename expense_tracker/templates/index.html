@@ -5,6 +5,7 @@
 
 {% block header %}
 <link rel="stylesheet" href="{% static 'css/index.css' %}" />
+<link rel="stylesheet" href="{% static 'css/transaction_table.css' %}" />
 {% endblock %}
 
 {% block content %}
@@ -23,8 +24,7 @@
           </div>
           <div><a href="{% url 'account_manager:category-index' %}"><button>Categories</button></a></div>
           <div class="date_form">
-            <form action="{% url 'index' %}" method="post">
-              {%csrf_token%}
+            <form action="{% url 'index' %}">
               {{dateFilterForm}}
               <div><input type="submit" value="Filter"></div>
             </form>
@@ -48,4 +48,49 @@
         
     </div>
 </body>
+{% endblock %}
+
+{% block script %}
+<script>
+  transaction_table = document.querySelector("#transaction-table")
+
+  const urlParams = new URLSearchParams(window.location.search);
+  urlQuery = window.location.search
+  if (urlQuery == "") {urlQuery="?"}
+  else {urlQuery+="&"}
+
+  set_htmx_get_attributes()
+
+  function reload() {
+    transaction_table = document.querySelector("#transaction-table")
+    transaction_table.addEventListener("htmx:afterOnLoad", reload)
+    set_htmx_get_attributes()
+  }
+
+  function set_htmx_get_attributes() {
+    table_headers = transaction_table.querySelectorAll("th")
+    ascending_col = transaction_table.querySelector('th[order="asc"]')
+    descending_col = transaction_table.querySelector('th[order="desc"]')
+    
+
+    table_headers.forEach(th => {
+      th.setAttribute("hx-get","change_sort/"+urlQuery+"col="+th.getAttribute("name")+"")
+    });
+
+    if (ascending_col) {
+      prev_value = ascending_col.getAttribute("hx-get")
+      value = prev_value+"&prev_order=asc"
+      ascending_col.setAttribute("hx-get", value)
+    }
+
+    if (descending_col) {
+      prev_value = descending_col.getAttribute("hx-get")
+      value = prev_value+"&prev_order=desc"
+      descending_col.setAttribute("hx-get", value)
+      console.log("Set on the descending column")
+    }
+
+  }
+  transaction_table.addEventListener("htmx:afterOnLoad", reload)
+</script>
 {% endblock %}

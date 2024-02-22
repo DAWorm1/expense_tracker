@@ -1,7 +1,6 @@
 from django.http.request import HttpRequest
 from django.shortcuts import render
 from .views import get_header_sorting_dict
-from account_manager.models import Transaction
 from account_manager.filters import get_transactions_filter_by_period,Period,get_transactions_filter_by_date
 from account_manager.forms import DateFilterForm
 from django.db.models.functions import Abs

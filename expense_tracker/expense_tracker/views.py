@@ -1,11 +1,10 @@
 from django.shortcuts import render
 from django.urls import reverse
-from django.http.response import HttpResponseRedirect,HttpResponse
+from django.http.response import HttpResponseRedirect
 from django.http.request import HttpRequest
 from account_manager.filters import Period,get_transactions_filter_by_period,get_transactions_filter_by_date
 from account_manager.utils import get_total_income_from_transactions,get_total_expenses_from_transactions
 from account_manager.forms import DateFilterForm
-from account_manager.models import Transaction
 
 def get_header_sorting_dict():
     # Set up transaction table sorting

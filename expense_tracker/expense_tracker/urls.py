@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from .views import index as HomePage
+from .htmx_views import change_sort
 
 urlpatterns = [
     path('', HomePage,name="index"),
@@ -24,3 +25,9 @@ urlpatterns = [
     path('auth/', include("auth_manager.urls")),
     path('admin/', admin.site.urls),
 ]
+
+htmx_patterns = [
+    path('change_sort/',change_sort),
+]
+
+urlpatterns += htmx_patterns

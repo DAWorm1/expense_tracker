@@ -71,6 +71,19 @@ def _get_dates_quarter_first_day(day_to_check: date):
         return date(day_to_check.year,10,1)
 
 
+def _get_transactions_by_date(start_value: date, end_value: date, transaction: bool, **kwargs):    
+    period_str = "transaction_date" if transaction else "posted_date"
+    date_filter = {}
+
+    if start_value:
+        date_filter[str(period_str+"__gte")] = start_value.isoformat()
+            
+    if end_value:
+        date_filter[str(period_str+"__lte")] = end_value.isoformat()
+
+    return Transaction.objects.filter(**date_filter,**kwargs)    
+
+
 """
 Parameters:
     period: a value from the `Period` enum. 
@@ -81,18 +94,16 @@ Returns:
 """
 def get_transactions_filter_by_period(period: Period, transaction:bool = True, today=date.today(), **kwargs) -> 'QuerySet[Transaction]':
     start_value = None
-
     start_value,end_value = Period.get_start_end_date_of_period(period,today)
 
-    if start_value and end_value:
-        period_str = "transaction_date" if transaction else "posted_date"
-        date_filter = {
-            str(period_str+"__gte"): start_value.isoformat(),
-            str(period_str+"__lte"): end_value.isoformat()
-        }
-        
-        return Transaction.objects.filter(
-            **date_filter,
-            **kwargs
-        )
+    return _get_transactions_by_date(start_value, end_value, transaction)
+
+    
+    
+def get_transactions_filter_by_date(start_date: date, end_date: date, transaction:bool = True, **kwargs):
+    if type(start_date) is not date and type(end_date) is not date:
+        raise Exception("A Date must be passed in order to filter by date. ")
+
+    return _get_transactions_by_date(start_date,end_date,transaction,**kwargs)
+    
 

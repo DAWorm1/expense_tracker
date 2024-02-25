@@ -1,0 +1,21 @@
+th[order="asc"]::after {
+    content: "↑";
+    font-size: 150%;
+    color: gray;
+    padding-left: .5rem;
+}
+
+th[order="desc"]::after {
+    content: "↓";
+    font-size: 150%;
+    color: gray;
+    padding-left: .5rem;
+}
+
+th.sortable {
+    cursor: pointer;
+}
+
+th.sortable:hover {
+    background-color: color-mix(in srgb,var(--element-background),#FFF 35%);
+}   

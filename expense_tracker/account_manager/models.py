@@ -1,11 +1,8 @@
 from django.db import models
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 from django.core.validators import validate_slug
 from django.forms import ValidationError
 from django.template.defaultfilters import slugify
 from taggit.managers import TaggableManager
-import pandas as pd
 from .templates import TransactionTemplate
 from typing import TYPE_CHECKING, Any
 from django.db.models.signals import post_save

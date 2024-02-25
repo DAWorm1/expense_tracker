@@ -5,7 +5,7 @@
       <th name="account" hx-target="#transaction-table" hx-swap="outerHTML" class="sortable" {% if sorting.account %}order="{{sorting.account}}"{% endif %}>Account</th>
       <th name="amount" hx-target="#transaction-table" hx-swap="outerHTML" class="sortable" {% if sorting.amount %}order="{{sorting.amount}}"{% endif %}>Amount</th>
       <th name="category" hx-target="#transaction-table" hx-swap="outerHTML"class="sortable" {% if sorting.category %}order="{{sorting.category}}"{% endif %}>Category</th>
-      <th name="category_certainty" hx-target="#transaction-table" hx-swap="outerHTML" class="sortable" {% if sorting.category_certainty %}order="{{sorting.category_certainty}}"{% endif %}>Has category been verified?</th>
+      <th name="vendor" hx-target="#transaction-table" hx-swap="outerHTML" class="sortable" {% if sorting.vendor %}order="{{sorting.vendor}}"{% endif %}>Vendor</th>
     </tr>
     {% for tr in transactions %}
     <tr>
@@ -13,8 +13,16 @@
       <td><a href="{% url 'account_manager:transaction-detail' tr.pk %}">{{tr.description}}</a></td>
       <td>{{tr.account.name}}</td>
       <td class="{%if tr.readable_amount < 0%}red{%elif tr.readable_amount > 0%}green{%endif%}" > {{tr.readable_amount}}</td>
-      <td><a href="{% url 'account_manager:category-detail' tr.category%}">{{tr.category}}</a></td>
-      <td class="{% if tr.is_category_verified %}green{%else%}red{%endif%}" >{% if tr.is_category_verified %}✓{% else %}𝕏{%endif%}</td>
+      <td><a href="{% url 'account_manager:category-detail' tr.category%}">{{tr.category}}</a>&nbsp;
+        {% if tr.is_category_verified %}
+        <div class="tooltip"><span class="green">✔</span><span class="tooltiptext">Verified</span></div>
+        {% endif %}
+      </td>
+      <td>{{tr.vendor}}&nbsp;
+        {% if tr.is_vendor_verified %}
+        <div class="tooltip"><span class="green">✔</span><span class="tooltiptext">Verified</span></div>
+        {% endif %}
+      </td>
     </tr>
     {% endfor %}
   </table>

@@ -4,6 +4,7 @@ from .views import get_header_sorting_dict
 from account_manager.filters import get_transactions_filter_by_period,Period,get_transactions_filter_by_date
 from account_manager.forms import DateFilterForm
 from django.db.models.functions import Abs
+from django.db.models import F
 
 def change_sort(request: HttpRequest):
     context = {}
@@ -42,8 +43,10 @@ def change_sort(request: HttpRequest):
         raise Exception("We should have filtered by period (through redirection to THIS_MONTH) or by date (through date_filter form)")
 
     if col != "amount":
-        sort_prefix = "-" if sorting[col] == "desc" else ""
-        context["transactions"] = transactions.order_by(sort_prefix+col)
+        if sorting[col] == "desc":
+            context["transactions"] = transactions.order_by(F(col).desc(nulls_last=True))
+        else:
+            context["transactions"] = transactions.order_by(F(col).asc(nulls_last=True))
     else:
         transactions = transactions.annotate(debit_amount_abs=Abs("debit_amount"))
         if sorting[col] == "desc":

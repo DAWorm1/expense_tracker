@@ -8,7 +8,7 @@ from account_manager.forms import DateFilterForm
 
 def get_header_sorting_dict():
     # Set up transaction table sorting
-    transaction_table_headers = ["transaction_date", "description", "account", "amount", "category", "category_certainty"]
+    transaction_table_headers = ["transaction_date", "description", "account", "amount", "category", "vendor"]
     sorting = {}
 
     for header in transaction_table_headers:
